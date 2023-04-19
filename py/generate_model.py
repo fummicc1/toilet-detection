@@ -1,12 +1,24 @@
 from PIL import Image
 import urllib
 import torch
+import torch.nn as nn
 import coremltools
 import torchvision
 
-model = torchvision.models.mobilenet_v3_large(
-    weights=torchvision.models.MobileNet_V3_Large_Weights
-)
+
+class ToiletDetection(nn.Module):
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self.model = torchvision.models.mobilenet_v3_large(
+            weights=torchvision.models.MobileNet_V3_Large_Weights
+        )
+
+    def forward(self, img):
+        out = self.model(img)
+        return nn.Softmax()(out)
+
+
+model = ToiletDetection()
 model.eval()
 
 input = torch.rand(1, 3, 224, 224)
@@ -43,7 +55,7 @@ model.save("mobilenetv3.mlpackage")
 example_image = Image.open("toilet.webp").resize((224, 224))
 
 # Make a prediction using Core ML
-out_dict = model.predict({"x_1": example_image})
+out_dict = model.predict({"img": example_image})
 
 # Print out top-1 prediction
 print(out_dict["classLabel"])  # toilet seat

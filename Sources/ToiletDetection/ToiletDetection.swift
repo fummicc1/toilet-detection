@@ -10,7 +10,7 @@ public class ToiletDetection {
     public init() {
         guard let url = Bundle.module.url(
             forResource: "mobilenetv3",
-            withExtension: "mlpackage"
+            withExtension: "mlmodelc"
         ) else {
             fatalError()
         }
@@ -29,7 +29,7 @@ public class ToiletDetection {
         ) else {
             fatalError()
         }
-        let result = try! model.prediction(input: mobilenetv3Input(x_1: buffer))
+        let result = try! model.prediction(input: mobilenetv3Input(img: buffer))
         let ret = result.classLabel_probs["toilet seat"] ?? .zero
         return ret
     }
