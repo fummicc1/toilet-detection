@@ -10,5 +10,23 @@
 			<integer>0</integer>
 		</dict>
 	</dict>
+	<key>SuppressBuildableAutocreation</key>
+	<dict>
+		<key>ToiletDetection</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>ToiletDetectionTests</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>ToiletDetection_ToiletDetection</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+	</dict>
 </dict>
 </plist>
