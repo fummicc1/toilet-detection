@@ -3,7 +3,7 @@ import UIKit
 import CoreGraphics
 
 
-public class ToiletDetection {
+public actor ToiletDetection {
 
     let model: mobilenetv3
 
@@ -32,11 +32,5 @@ public class ToiletDetection {
         let result = try! model.prediction(input: mobilenetv3Input(img: buffer))
         let ret = result.classLabel_probs["toilet seat"] ?? .zero
         return ret
-    }
-}
-
-extension ToiletDetection {
-    func perform(image: MLShapedArray<Double>) {
-
     }
 }

@@ -8,31 +8,62 @@
 import SwiftUI
 import ToiletDetection
 
-//let imageAddress = "https://ropping.tv-asahi.co.jp/images/common/1108490000CT.jpg"
-let imageAddress = "https://kokubo.co.jp/wp/wp-content/uploads/km-011-img4.jpg"
 
 struct ContentView: View {
 
     @State private var prob: Double = 0
+    @State private var latestFrame: UIImage?
     private let toiletDetection = ToiletDetection()
+    @State private var cameraFrame = CGRect(
+        origin: .zero,
+        size: .init(
+            width: 320,
+            height: 320
+        )
+    )
 
     var body: some View {
         VStack {
-            AsyncImage(url: URL(string: imageAddress), content: {
-                $0.image?.resizable()
+            CameraView(                
+                onUpdateFrame: { buffer in
+                    let ciImage = CIImage(cvImageBuffer: buffer).oriented(.right)
+                    let ciContext = CIContext()
+                    let cgImage = ciContext.createCGImage(
+                        ciImage,
+                        from: ciImage.extent
+                    )!
+                    let image = UIImage(cgImage: cgImage)
+                    Task {
+                        await MainActor.run {
+                            latestFrame = image
+                        }
+                    }
+                },
+                frame: cameraFrame
+            )
+            .frame(width: cameraFrame.width, height: cameraFrame.height)
+            if let latestFrame {
+                Image(uiImage: latestFrame)
+                    .resizable()
                     .frame(width: 120, height: 120)
-            })
+            }
             Text("Toilet Seat existence: \(prob)%")
         }
         .padding()
         .task {
-            let data = await Task.detached {
-                let data = try! Data(contentsOf: URL(string: imageAddress)!)
-                return data
-            }.value
-            prob = toiletDetection.perform(image: UIImage(data: data)!) * 100
+            Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { _ in
+                if let image = self.latestFrame {
+                    Task {
+                        self.prob = await validate(image: image)
+                    }
+                }
+            }
         }
+    }
 
+    func validate(image: UIImage) async -> Double {
+        let prob = await toiletDetection.perform(image: image) * 100
+        return prob
     }
 }
 
